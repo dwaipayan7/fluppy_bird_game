@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:fluppy_bird/components/score.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fluppy_bird/components/bird.dart';
@@ -18,8 +19,17 @@ class FlappyBirdGame extends FlameGame
   late Background background;
   late Grounds grounds;
   late PipeManager pipeManager;
+  late ScoreText scoreText;
+
+  int score = 0;
 
   bool isGameOver = false;
+
+
+  void incrementScore() {
+    score += 1;
+  }
+
 
   @override
   FutureOr<void> onLoad() {
@@ -38,6 +48,10 @@ class FlappyBirdGame extends FlameGame
     // Load pipe manager
     pipeManager = PipeManager();
     add(pipeManager);
+
+    scoreText = ScoreText();
+    add(scoreText);
+
   }
 
   @override
