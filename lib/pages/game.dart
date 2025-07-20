@@ -2,31 +2,42 @@ import 'dart:async';
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:fluppy_bird/components/bird.dart';
-import 'package:fluppy_bird/constants/constants.dart';
-import 'package:fluppy_bird/pages/background.dart';
 import 'package:flutter/material.dart';
 
-import 'grounds.dart';
+import 'package:fluppy_bird/components/bird.dart';
+import 'package:fluppy_bird/components/pipe.dart';         // ✅ Needed for reset
+import 'package:fluppy_bird/components/pipe_manager.dart';
+import 'package:fluppy_bird/components/background.dart';
+import 'package:fluppy_bird/components/grounds.dart';
 
-class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
+import 'package:fluppy_bird/constants/constants.dart';
+
+class FlappyBirdGame extends FlameGame
+    with TapDetector, HasCollisionDetection {
   late Bird bird;
   late Background background;
   late Grounds grounds;
+  late PipeManager pipeManager;
+
+  bool isGameOver = false;
 
   @override
   FutureOr<void> onLoad() {
-    //Load the background
+    // Load the background
     background = Background(size);
     add(background);
 
-    //Load the bird
+    // Load the bird
     bird = Bird();
     add(bird);
 
-    //load grounds
+    // Load the ground
     grounds = Grounds();
     add(grounds);
+
+    // Load pipe manager
+    pipeManager = PipeManager();
+    add(pipeManager);
   }
 
   @override
@@ -34,42 +45,41 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     bird.flap();
   }
 
-  //GameOver
-
-  bool isGameOver = false;
-
+  // Game Over handler
   void gameOver() {
     if (isGameOver) return;
 
     isGameOver = true;
     pauseEngine();
 
-    //Show Dialog box
-
-    showDialog(
-      context: buildContext!,
-      builder: (context) => AlertDialog(
-        title: const Text("Game Over"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              //pop the game
-              Navigator.pop(context);
-
-              //reset game
-              resetGame();
-            },
-            child: const Text("Play Again"),
-          ),
-        ],
-      ),
-    );
+    // Show game over dialog
+    if (buildContext != null) {
+      showDialog(
+        context: buildContext!,
+        builder: (context) => AlertDialog(
+          title: const Text("Game Over"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                resetGame(); // Reset the game
+              },
+              child: const Text("Play Again"),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void resetGame() {
-    bird.position = Vector2(birdStartY, birdStartY);
+    bird.position = Vector2(birdStartX, birdStartY);
     bird.velocity = 0;
-    isGameOver =false;
+    isGameOver = false;
+
+    // Remove all pipes
+    children.whereType<Pipe>().forEach((pipe) => pipe.removeFromParent());
+
     resumeEngine();
   }
 }
